@@ -56,9 +56,17 @@ export function BookmarkStats({ users }: BookmarkStatsProps) {
     { month: "Jul", bookmarks: 12 },
   ];
 
-  // Get a color from chart CSS variables
+  // Enhanced color palette with fallback to CSS variables
   const getChartColor = (index: number) => {
     const colors = [
+      "#0088FE", // blue
+      "#00C49F", // teal
+      "#FFBB28", // yellow
+      "#FF8042", // orange
+      "#8884D8", // purple
+      "#A4DE6C", // green
+      "#D0ED57", // lime
+      "#FF6B6B", // red
       "var(--chart-1)",
       "var(--chart-2)",
       "var(--chart-3)",
@@ -111,22 +119,18 @@ export function BookmarkStats({ users }: BookmarkStatsProps) {
             : "Bookmark trend over time"}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs value={view} onValueChange={setView} className="h-[300px] mt-4">
+      <CardContent className="h-[400px]">
+        <Tabs value={view} onValueChange={setView} className="h-full flex flex-col">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="department">By Department</TabsTrigger>
             <TabsTrigger value="trend">Trend</TabsTrigger>
           </TabsList>
-          <TabsContent value="department">
+          
+          <TabsContent value="department" className="flex-1 min-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={departmentStats}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 0,
-                  bottom: 5,
-                }}
+                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
               >
                 <XAxis 
                   dataKey="name" 
@@ -137,23 +141,21 @@ export function BookmarkStats({ users }: BookmarkStatsProps) {
                 <Tooltip content={<DepartmentTooltip />} />
                 <Bar dataKey="bookmarkCount">
                   {departmentStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getChartColor(entry.index)} />
+                    <Cell 
+                      key={`dept-${entry.name}-${index}`} 
+                      fill={getChartColor(entry.index)} 
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
           
-          <TabsContent value="trend">
+          <TabsContent value="trend" className="flex-1 min-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={trendData}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis dataKey="month" />
@@ -162,7 +164,7 @@ export function BookmarkStats({ users }: BookmarkStatsProps) {
                 <Line
                   type="monotone"
                   dataKey="bookmarks"
-                  stroke="var(--chart-1)"
+                  stroke="#8884d8"
                   strokeWidth={2}
                   dot={{ r: 4, strokeWidth: 2 }}
                   activeDot={{ r: 6 }}
