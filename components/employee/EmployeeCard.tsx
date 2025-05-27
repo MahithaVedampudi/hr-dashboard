@@ -14,13 +14,15 @@ import { useToast } from "@/hooks/use-toast";
 
 interface EmployeeCardProps {
   user: User;
+  onPromote?: (userId: string) => void; 
 }
 
-export function EmployeeCard({ user }: EmployeeCardProps) {
+export function EmployeeCard({ user, onPromote }: EmployeeCardProps) {
   const { isBookmarked, addBookmark, removeBookmark } = useBookmarks();
   const bookmarked = isBookmarked(user.id);
   const { toast } = useToast();
   const [promoting, setPromoting] = useState(false);
+  const [currentRating, setCurrentRating] = useState(user.performanceRating || 0);
 
   const handleBookmarkToggle = () => {
     if (bookmarked) {
@@ -40,11 +42,21 @@ export function EmployeeCard({ user }: EmployeeCardProps) {
 
   const handlePromote = () => {
     setPromoting(true);
+    
+    // Update the rating locally (capped at 5)
+    const newRating = Math.min(currentRating + 1, 5);
+    setCurrentRating(newRating);
+    
+    // If there's an onPromote prop, call it to update the parent state
+    if (onPromote) {
+      onPromote(user.id);
+    }
+    
     setTimeout(() => {
       setPromoting(false);
       toast({
         title: "Employee promoted",
-        description: `${user.firstName} ${user.lastName} has been promoted.`,
+        description: `${user.firstName} ${user.lastName} has been promoted. Their rating is now ${newRating}.`,
       });
     }, 1000);
   };
@@ -78,15 +90,15 @@ export function EmployeeCard({ user }: EmployeeCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Performance:</span>
-              <Rating value={user.performanceRating || 0} size="sm" />
+              <Rating value={currentRating} size="sm" />
             </div>
-            <PerformanceBadge rating={user.performanceRating || 0} size="sm" />
+            <PerformanceBadge rating={currentRating} size="sm" />
           </div>
         </div>
       </CardContent>
       <CardFooter className="grid grid-cols-3 gap-2 p-2">
-        <Link href={`/employee/${user.id}`} className="col-span-1" >
-          <Button variant="outline" size="sm" className="w-full" >
+        <Link href={`/employee/${user.id}`} className="col-span-1">
+          <Button variant="outline" size="sm" className="w-full">
             <Eye className="mr-1 h-3.5 w-3.5" />
             View
           </Button>
@@ -107,7 +119,7 @@ export function EmployeeCard({ user }: EmployeeCardProps) {
           size="sm" 
           className="col-span-1"
           onClick={handlePromote}
-          disabled={promoting}
+          disabled={promoting || currentRating >= 5} // Disable if rating is already max
         >
           <ArrowUpCircle className={`mr-1 h-3.5 w-3.5 ${promoting ? 'animate-spin' : ''}`} />
           Promote
